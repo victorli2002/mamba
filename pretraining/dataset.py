@@ -4,14 +4,6 @@ from glob import glob
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 
-from torch.utils.data import Dataset
-import torch
-from transformers import AutoTokenizer
-
-from torch.utils.data import Dataset
-import torch
-from transformers import AutoTokenizer
-
 class TextDataset(Dataset):
     def __init__(self, file_paths, max_length=1024):
         self.tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neox-20b")
@@ -50,14 +42,14 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.data[idx]
-    
+
 if __name__ == "__main__":
     train_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./text_data/train_10M"))
     train_paths = glob(os.path.join(train_dir, "*.train"))
 
     train_dataset = TextDataset(train_paths)
     train_dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./train.pt"))
-    
+
     torch.save(train_dataset, train_dataset_path)
 
     dev_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./text_data/dev"))
@@ -65,7 +57,7 @@ if __name__ == "__main__":
 
     dev_dataset = TextDataset(dev_paths)
     dev_dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./dev.pt"))
-    
+
     torch.save(dev_dataset, dev_dataset_path)
 
     test_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./text_data/test"))
@@ -73,6 +65,5 @@ if __name__ == "__main__":
 
     train_dataset = TextDataset(test_paths)
     train_dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "./test.pt"))
-    
+
     torch.save(train_dataset, train_dataset_path)
-    

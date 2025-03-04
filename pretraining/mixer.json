@@ -1,0 +1,12 @@
+{
+    "n_layer": 10,
+    "vocab_size": 50277,
+    "ssm_cfg": {},
+    "attn_layer_idx": [0,9],
+    "attn_cfg":{"num_heads":8},
+    "rms_norm": true,
+    "residual_in_fp32": true,
+    "fused_add_norm": true,
+    "pad_vocab_size_multiple":8,
+    "tie_embeddings": true
+}
