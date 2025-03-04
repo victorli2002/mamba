@@ -1,4 +1,5 @@
 # source: https://github.com/redotvideo/mamba-chat/blob/main/train_mamba.py
+# TODO: TRAINING IS TAKING 20 MINUTES PER STEP. SURELY THAT IS NOT CORRECT.
 import torch
 import argparse
 import json
@@ -18,7 +19,7 @@ def make_datacollator(tokenizer):
 
     class DataCollatorForTextDataset(object):
         """
-        Collate examples for supervised fine-tuning. TODO: FIX THIS.
+        Collate examples for supervised fine-tuning.
         """
         def __call__(self, instances: Sequence) -> Dict[str, torch.Tensor]:
             # input(type(instances)) # list
@@ -90,7 +91,11 @@ def run(args):
             gradient_accumulation_steps=args.gradient_accumulation_steps,
             optim=args.optim,
             output_dir=args.output_dir,
-            logging_steps=50,
+            logging_strategy='steps',
+            logging_dir=os.path.join(args.output_dir, 'logs')
+            logging_first_step=True,
+            logging_steps=1, # TODO: SET TO 50 FOR RUN?
+            max_steps=5,  # TODO: TESTING ONLY. COMMENT OUT FOR RUN
             save_steps=500,
             eval_on_start=True,
             do_eval=True,
