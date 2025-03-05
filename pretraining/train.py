@@ -5,6 +5,7 @@ from glob import glob
 from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 from torch.nn import CrossEntropyLoss
+import torch.nn.functional as F
 from torch.optim.lr_scheduler import LambdaLR
 
 from dataset import TextDataset
@@ -42,7 +43,7 @@ class TrainerConfig:
     #final_tokens = 260e9 # (at what point we reach 10% of original LR)
     # checkpoint settings
     ckpt_path = None
-    num_workers = 0 # for DataLoader
+    num_workers = 0
     writer = None
     
     def __init__(self, **kwargs):
@@ -81,7 +82,7 @@ class Trainer:
             {"params": params_decay, "weight_decay": config.weight_decay},
             {"params": params_nodecay, "weight_decay": 0.0},
         ]
-        optimizer = optim.AdamW(optim_groups, lr=config.learning_rate, betas=config.betas)
+        optimizer = optim.AdamW(optim_groups, lr=config.learning_rate, betas=config.betas, eps=1e-5)
         step = 0
         def run_epoch(split):
             nonlocal step
@@ -104,25 +105,25 @@ class Trainer:
                 with torch.set_grad_enabled(is_train):
                     
                     logits = model(inputs).logits
-                    loss_fn = CrossEntropyLoss()
+                    loss_fn = F.cross_entropy
                     loss = loss_fn(logits.view(-1, logits.size(-1)), outputs.view(-1))
-                    print(logits.view(-1, logits.size(-1)))
-                    print(outputs.view(-1))
+                    #print(logits.view(-1, logits.size(-1)))
+                    #print(outputs.view(-1))
                     loss = loss.mean() # collapse all losses if they are scattered on multiple gpus
-                    print(loss)
+                    #print(loss)
                     losses.append(loss.item())
 
                 if is_train:
 
-                    # backprop and update the parameters
+                    # backprop and update the parameter
                     model.zero_grad()
                     loss.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_norm_clip)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_norm_clip) 
                     optimizer.step()
-                    print("after update")
-                    for name, param in model.named_parameters():
-                        if torch.isnan(param).any():
-                            print(f"NaN detected in {name}")
+                    #print("after update")
+                    #for name, param in model.named_parameters():
+                    #    if torch.isnan(param).any():
+                    #        print(f"NaN detected in {name}")
 
                     # decay the learning rate based on our progress
                     if config.lr_decay:
@@ -174,7 +175,7 @@ if __name__ == "__main__":
 
     tconf = TrainerConfig()
     model = MambaLMHeadModel(
-        MambaConfig(d_model = 100, n_layer = 10),
+        MambaConfig(d_model = 25, n_layer = 10, pad_vocab_size_multiple = 1),
         initializer_cfg=None,
         device=device,
         dtype=torch.float16)
